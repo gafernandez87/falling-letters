@@ -8,7 +8,7 @@ class GameOver extends React.Component {
 
     render(){
         return(
-            <div>
+            <div className="gameOverScren">
                 <h1>GAME OVER</h1>
                 <h4>Score: {this.props.location.state.score || 0}</h4>
                 <button onClick={this.handleClick}>Play again</button>

@@ -70,7 +70,7 @@ class Game extends React.Component{
             if(gameSpeed === 1){
                 lettersGenerated++
     
-                const randomLetter = this.getRandomeLetter()
+                let randomLetter = this.getRandomeLetter()
                 letters.push({
                     letter: randomLetter,
                     key: lettersGenerated,
@@ -79,6 +79,22 @@ class Game extends React.Component{
                         y: 20,
                     }
                 })
+
+                if(score >= 10){
+                    const r = this.getRandom(1, 6)
+                    if(r === 2){
+                        lettersGenerated++
+                        randomLetter = this.getRandomeLetter()
+                        letters.push({
+                            letter: randomLetter,
+                            key: lettersGenerated,
+                            position: {
+                                x: this.getRandom(10, window.innerWidth-30),
+                                y: 20,
+                            }
+                        })
+                    }
+                }
             }
             
             //Update letters position and check gameover
@@ -108,28 +124,7 @@ class Game extends React.Component{
     }
 
     shakeScreen = () => {
-        let {letters, pressedLetters, score} = this.state
-        const countBefore = letters.length
-        //Check if pressed letters are in the screen and remove them
-        console.log("letters B", letters)
-        console.log("pressedLetters B", pressedLetters)
-        console.log("score B", score)
-        if(pressedLetters.length > 0){
 
-            letters = letters.filter(l => {
-                return pressedLetters.indexOf(l.letter) === -1
-            })
-
-            if(countBefore === letters.length){
-                score--
-            }else{
-                score += countBefore - letters.length
-            }
-        }
-
-        console.log("letters A", letters)
-        console.log("pressedLetters A", pressedLetters)
-        console.log("score A", score)
     }
 
     handleKeyPress = (e) => {
@@ -144,7 +139,7 @@ class Game extends React.Component{
     }
 
     getRandom = (min, max) => {
-        return Math.random() * (max - min) + min;
+        return Math.floor(Math.random() * (max - min) + min);
     }
 
     stopGame = () => {
@@ -170,21 +165,14 @@ class Game extends React.Component{
 
     render(){
         const letters = this.state.letters
-        const gameOverLine = {
-            position: "absolute", 
-            width: "100%",
-            borderTop: "3px solid black",
-            top: (window.innerHeight-100)
-        }
 
         return(
             <div className="game">
-                <h1>Score: {this.state.score}</h1>
-                <button onClick={this.stopGame}>STOP</button>
-                <button onClick={this.startGame}>START</button>
+                <p className="score">Score {this.state.score}</p>
+                
                 {letters && letters.map(letter => this.drawLetter(letter))}
-                <div style={gameOverLine}>GAME OVER</div>
-                <button onClick={this.shakeScreen}>TEST</button>
+
+                <div className="gameOverSection" style={{top: (window.innerHeight-100)}}>GAME OVER</div>
             </div>
         )
     }
