@@ -1,5 +1,5 @@
 import React from 'react';
-
+import explosion from '../assets/explode.gif'
 
 const letterList = ["A", "B", "C", "D", "E", "F", 
                     "G", "H", "I", "J", "K", "L", 
@@ -20,7 +20,9 @@ class Game extends React.Component{
             loop: undefined,
             letters: [],
             pressedLetters: [],
-            lettersGenerated: 0
+            explosionList: [],
+            lettersGenerated: 0,
+            showMiss: "none"
         }
     }
 
@@ -32,9 +34,12 @@ class Game extends React.Component{
     mainLoop = () => {
         let {score, gameSpeed, letters, 
             lettersGenerated, pressedLetters,
-            speedIncrement, fallingSpeed, gameOver} = this.state
+            speedIncrement, fallingSpeed, gameOver,
+            explosionList} = this.state
         
         if(!gameOver) {
+
+            //explosionList = []
             
             //Increment speeds
             if(lettersGenerated % 10 === 0){
@@ -50,18 +55,26 @@ class Game extends React.Component{
                 gameSpeed = 1
             }
     
-            const countBefore = letters.length
+            let newLetters = letters;
+
             //Check if pressed letters are in the screen and remove them
             if(pressedLetters.length > 0){
 
-                letters = letters.filter(l => {
+                newLetters = letters.filter(l => {
                     return pressedLetters.indexOf(l.letter) === -1
                 })
+
+                letters.forEach(l => {
+                    if(pressedLetters.indexOf(l.letter) >= 0){
+                        explosionList.push(l)
+                    }
+                })
     
-                if(countBefore === letters.length){
+                if(letters.length === newLetters.length){
                     score--
+                    this.shakeScreen()
                 }else{
-                    score += countBefore - letters.length
+                    score += letters.length - newLetters.length
                 }
                 pressedLetters = []
             }
@@ -71,7 +84,7 @@ class Game extends React.Component{
                 lettersGenerated++
     
                 let randomLetter = this.getRandomeLetter()
-                letters.push({
+                newLetters.push({
                     letter: randomLetter,
                     key: lettersGenerated,
                     position: {
@@ -85,7 +98,7 @@ class Game extends React.Component{
                     if(r === 2){
                         lettersGenerated++
                         randomLetter = this.getRandomeLetter()
-                        letters.push({
+                        newLetters.push({
                             letter: randomLetter,
                             key: lettersGenerated,
                             position: {
@@ -98,7 +111,7 @@ class Game extends React.Component{
             }
             
             //Update letters position and check gameover
-            letters.forEach(letter => {
+            newLetters.forEach(letter => {
                 letter.position.y += fallingSpeed
                 if(letter.position.y >= (window.innerHeight-110)){
                     gameOver = true
@@ -107,7 +120,7 @@ class Game extends React.Component{
     
             const loop = requestAnimationFrame(this.mainLoop);
             this.setState({
-                letters,
+                letters: newLetters,
                 score, 
                 speedIncrement, 
                 lettersGenerated, 
@@ -115,16 +128,20 @@ class Game extends React.Component{
                 loop,
                 fallingSpeed, 
                 pressedLetters, 
-                gameOver
+                gameOver,
+                explosionList
             })
         }else{
             this.stopGame()
             this.props.history.push({pathname: '/gameOver', state:{score: this.state.score}})
-        }        
+        }
     }
 
     shakeScreen = () => {
-
+        this.setState({showMiss: "inline"})
+        setTimeout(() => {
+            this.setState({showMiss: "none"})        
+        }, 100);
     }
 
     handleKeyPress = (e) => {
@@ -163,15 +180,35 @@ class Game extends React.Component{
         )
     }
 
+    showExplosion = (letter) => {
+        
+        setTimeout(() => {
+            const explosionList = this.state.explosionList.filter(l => {
+                return l.letter !== letter.letter
+            })
+            this.setState({explosionList})
+        }, 350);
+
+        return (<img key={`exp_${letter.key}`} src={explosion} 
+                style={{
+                    position: "absolute",
+                    left: letter.position.x-30,
+                    top: letter.position.y,
+                    width: 100
+                }}/>)
+    }
+
     render(){
-        const letters = this.state.letters
+        const {letters, explosionList, showMiss } = this.state
 
         return(
             <div className="game">
+                <div className="miss" style={{display: showMiss}} />
                 <p className="score">Score {this.state.score}</p>
                 
                 {letters && letters.map(letter => this.drawLetter(letter))}
 
+                {explosionList && explosionList.map(letter => this.showExplosion(letter))}
                 <div className="gameOverSection" style={{top: (window.innerHeight-100)}}>GAME OVER</div>
             </div>
         )
