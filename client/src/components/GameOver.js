@@ -9,7 +9,8 @@ class GameOver extends React.Component {
         this.state = {
             score: props.location.state.score,
             name: "",
-            message: ""
+            message: "",
+            submitDisabled: false
         }
     }
 
@@ -28,7 +29,7 @@ class GameOver extends React.Component {
         })
         .then(res =>  res.json())
         .then(_ => {
-            this.setState({message: "Score saved"})
+            this.setState({message: "Score saved", submitDisabled: true})
         })
         .catch(err =>{
             console.log(err)
@@ -53,7 +54,7 @@ class GameOver extends React.Component {
                         <Form.Item label="Name">
                             <Input type="text" value={this.state.name} onChange={this.handleChange}/>
                         </Form.Item>
-                        <Button type="default" onClick={this.saveScore}>SUBMIT</Button>
+                        <Button type="default" {...this.state.submitDisabled} onClick={this.saveScore}>SUBMIT</Button>
                         {this.state.message && (<p>{this.state.message}</p>)}
                     </Form>
                 </div>
