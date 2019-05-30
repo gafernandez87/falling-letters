@@ -9,17 +9,6 @@ import './App.css';
 
 class App extends React.Component{
 
-  componentDidMount(){
-    fetch("/api/letters")
-      .then(res => {console.log(res); return res.json()})
-      .then(data => {
-        console.log(data)
-      })
-      .catch(e => {
-        console.error(e)
-      })
-  } 
-
   render() {
     return (
       <div className="App">
