@@ -1,16 +1,24 @@
 import React from 'react';
+import {Table} from 'antd'
+
+
+const columns = [
+    {title: 'Name',dataIndex: 'name',key: 'name'},
+    {title: 'Score',dataIndex: 'score',key: 'score'}
+];
 
 class Ranking extends React.Component {
 
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.state = {
-            rankingList: []
+            rankingList: [],
+            rankingMax: props.max
         }
     }
 
     componentDidMount = () => {
-        fetch("/api/ranking")
+        fetch(`/api/ranking/${this.state.rankingMax}`)
         .then(res =>  res.json())
         .then(data => {
             this.setState({rankingList: data});
@@ -20,17 +28,26 @@ class Ranking extends React.Component {
         })
     }
 
+    getTitle = () => {
+        const max = this.state.rankingMax
+        return max > 0 ? `TOP ${max}` : "RANKING"
+    }
     render(){
-        const {rankingList} = this.state;
+        let data = [];
+        if(this.state.rankingList.length > 0){
+            data = this.state.rankingList.map(ranking => {
+                const keys = Object.keys(ranking)
+
+                return {
+                    "name": keys[0],
+                    "score": ranking[keys[0]]
+                }
+            })
+        }
         return (
-            <div>
-                <h3>RANKING</h3>
-                <ul>
-                {rankingList && rankingList.map(ranking => {
-                    const keys = Object.keys(ranking)
-                    return <li>{`${keys[0]}: ${ranking[keys[0]]}`}</li>
-                })}
-                </ul>
+            <div className="ranking">
+                <h3>{this.getTitle()}</h3>
+                <Table columns={columns} dataSource={data}></Table>
             </div>
         )
     }

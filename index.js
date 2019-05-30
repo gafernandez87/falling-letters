@@ -26,14 +26,59 @@ app.post("/api/record", (req, res) => {
                     res.status(500)
                     res.send("Error saving score")
                 }else{
-                    console.log(_)
                     res.status(200)
-                    res.send("ack")
+                    res.send(`{"status": "saved"}`)
                 }
             })
         }
     })
     
+})
+
+app.get("/api/ranking/:max", (req, res) => {
+    const max = req.params.max
+
+    redisClient.keys("*", (err, keys) => {
+        if(err){
+            console.log(err)
+            res.send([])
+        }else{
+            Promise.all(keys.map(key => {
+                return new Promise(function(resolve, reject){
+                    redisClient.get(key, function(err, data){
+                        if(err){
+                            reject(err)
+                        }else{
+                            resolve(data)
+                        }
+                    })
+
+                })
+            }))
+            .then(values => {
+                let result = []
+                for(let i = 0; i < keys.length; i++){
+                    let obj = {}
+                    const name = keys[i].split("_")[0]
+                    obj[name] = values[i]
+                    result.push(obj)
+                }
+
+                result.sort((a, b) => {
+                    return b[Object.keys(b)[0]] - a[Object.keys(a)[0]]
+                });
+
+                if(max > 0){
+                    result = result.slice(0, max)
+                }
+                res.send(result)
+            })
+            .catch(err => {
+                res.send(err)
+                console.log(err)
+            })
+        }
+    })
 })
 
 app.get("/api/ranking", (_, res) => {

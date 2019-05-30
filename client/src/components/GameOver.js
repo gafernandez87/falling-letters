@@ -1,4 +1,6 @@
 import React from 'react';
+import {Form, Input, Button} from 'antd'
+import { stringify } from 'querystring';
 
 class GameOver extends React.Component {
 
@@ -6,7 +8,8 @@ class GameOver extends React.Component {
         super(props)
         this.state = {
             score: props.location.state.score,
-            name: ""
+            name: "",
+            message: ""
         }
     }
 
@@ -15,7 +18,7 @@ class GameOver extends React.Component {
     }
 
     saveScore = () => {
-        fetch('/api/record', {
+        fetch("/api/record", {
             method: 'post',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
@@ -24,8 +27,12 @@ class GameOver extends React.Component {
             })
         })
         .then(res =>  res.json())
-        .then(data => {
-            console.log(data)
+        .then(_ => {
+            this.setState({message: "Score saved"})
+        })
+        .catch(err =>{
+            console.log(err)
+            this.setState({message: err.message})
         })
     }
 
@@ -35,15 +42,20 @@ class GameOver extends React.Component {
 
     render(){
         return(
-            <div className="gameOverScren">
+            <div className="gameOverScreen">
                 <h1>GAME OVER</h1>
                 <h4>Score: {this.state.score || 0}</h4>
-                <button onClick={this.playAgain}>Play again</button>
+                <Button type="default" className="playAgain" onClick={this.playAgain}>Play again</Button>
 
-                <div>
-                    <p>Submit your score</p>
-                    <input type="text" value={this.state.name} onChange={this.handleChange}/>
-                    <button onClick={this.saveScore}>SUBMIT</button>
+                <div className="submitScore">
+                    <Form className="login-form">
+                        <p>Submit your score</p>
+                        <Form.Item label="Name">
+                            <Input type="text" value={this.state.name} onChange={this.handleChange}/>
+                        </Form.Item>
+                        <Button type="default" onClick={this.saveScore}>SUBMIT</Button>
+                        {this.state.message && (<p>{this.state.message}</p>)}
+                    </Form>
                 </div>
             </div>
         )

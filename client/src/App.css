@@ -1,9 +1,10 @@
-.App {
+body{
+  background: url("http://anemurionhotel.com.tr/wp-content/uploads/2016/05/Blue-Abstract-Background-12-1.jpg");
   text-align: center;
 }
 
-body {
-  background: url("http://anemurionhotel.com.tr/wp-content/uploads/2016/05/Blue-Abstract-Background-12-1.jpg")
+.header{
+  text-align: left;
 }
 
 .App-logo {
@@ -64,22 +65,61 @@ body {
   border-top: 10px solid white;
 }
 
-.landing, .gameOverScren{
-  color: white;
-  font-size: 40px;
-}
-
-.landing button, .gameOverScren button{
-  width: 200px;
-  height: 100px;
+.landing, .gameOverScreen{
   font-size: 30px;
-  text-transform: uppercase;
-  font-weight: bold;
-  background-color: white; 
+  color: white;
 }
 
 .landing button{
-  margin: auto auto;
+  height: 50px;
+  width: 200px;
+  margin-top: 60px;
+  font-size: 30px;
+}
+
+.gameOverScreen h1, .gameOverScreen h4{color: white;}
+
+.submitScore p{color: white; font-size: 20px}
+.submitScore label{ text-align: left; color: white !important}
+.submitScore{
+  width: 30%;
+  margin: 0 auto;
+  margin-top: 10%;
+}
+
+.landing h1, .ranking h3{color: white;}
+
+.ranking{
+  width: 50%;
+  margin: 0 auto;
+  margin-top: 5%;
+}
+
+.ranking h3{
+  font-size: 30px;
+}
+
+.ranking table tbody{
+  font-size: 22px;
+  color: white; 
+}
+
+.ranking table, .ranking table tr, .ranking table tr td, .ranking table th{
+  border: 1px solid black;
+}
+
+.ranking table tbody tr:hover{
+  color: black;
+}
+
+.gameOverScreen .playAgain{
+  width: 200px;
+  height: 100px;
+  font-size: 30px;
+  margin-top: 20px;
+  text-transform: uppercase;
+  font-weight: bold;
+  background-color: white; 
 }
 
 .miss {

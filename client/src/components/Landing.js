@@ -1,5 +1,6 @@
 import React from 'react';
 import Ranking from './Ranking'
+import {Button} from 'antd'
 
 class Landing extends React.Component {
 
@@ -12,8 +13,8 @@ class Landing extends React.Component {
             <div className="landing">
                 <h1>Falling letters</h1>
                 <p>Type the letters you see in the screen before they reach the "GAME OVER" section</p>
-                <button onClick={this.startGame}>PLAY</button>
-                <Ranking />
+                <Button type="default" onClick={this.startGame}>PLAY</Button>
+                <Ranking max="3" />
             </div>
         )
     }
