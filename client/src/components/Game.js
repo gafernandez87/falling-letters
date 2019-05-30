@@ -8,6 +8,35 @@ const letterList = ["A", "B", "C", "D", "E", "F",
                     "X", "Y", "Z"]
 
 
+
+class Letter {
+    constructor(key, letter, x, y) {
+        this.key = key;
+        this.letter = letter;
+        this.x = x;
+        this.y = y;
+        this.count = 0;
+        this.active = true;
+        this.render = function () {
+            return (<span className="letter" key={this.key} style={{
+                position: "absolute",
+                left: this.x,
+                top: this.y
+            }}>
+                {this.letter}
+            </span>);
+        };
+        this.exploding = function () {
+            return (<img key={`exp_${this.key}`} src={explosion} style={{
+                position: "absolute",
+                left: this.x - 30,
+                top: this.y,
+                width: 100
+            }} />);
+        };
+    }
+}
+
 class Game extends React.Component{
    
     constructor(){
@@ -20,7 +49,6 @@ class Game extends React.Component{
             loop: undefined,
             letters: [],
             pressedLetters: [],
-            explosionList: [],
             lettersGenerated: 0,
             showMiss: "none"
         }
@@ -34,13 +62,9 @@ class Game extends React.Component{
     mainLoop = () => {
         let {score, gameSpeed, letters, 
             lettersGenerated, pressedLetters,
-            speedIncrement, fallingSpeed, gameOver,
-            explosionList} = this.state
+            speedIncrement, fallingSpeed, gameOver} = this.state
         
         if(!gameOver) {
-
-            //explosionList = []
-            
             //Increment speeds
             if(lettersGenerated % 10 === 0){
                 speedIncrement += 0.0001
@@ -55,72 +79,65 @@ class Game extends React.Component{
                 gameSpeed = 1
             }
     
-            let newLetters = letters;
 
             //Check if pressed letters are in the screen and remove them
             if(pressedLetters.length > 0){
+                
+                let found = false;
+                pressedLetters.forEach(pl => {
+                    letters.forEach(letter => {
+                        if(letter.active && pl === letter.letter){
+                            letter.active = false;
+                            score++;
+                            found = true;
+                        }
+                    })
 
-                newLetters = letters.filter(l => {
-                    return pressedLetters.indexOf(l.letter) === -1
-                })
-
-                letters.forEach(l => {
-                    if(pressedLetters.indexOf(l.letter) >= 0){
-                        explosionList.push(l)
+                    if(!found){
+                        this.shakeScreen();
+                        score--;
+                        found = true;
                     }
                 })
-    
-                if(letters.length === newLetters.length){
-                    score--
-                    this.shakeScreen()
-                }else{
-                    score += letters.length - newLetters.length
-                }
+
                 pressedLetters = []
             }
     
             //Add new letter to the screen
             if(gameSpeed === 1){
                 lettersGenerated++
-    
-                let randomLetter = this.getRandomeLetter()
-                newLetters.push({
-                    letter: randomLetter,
-                    key: lettersGenerated,
-                    position: {
-                        x: this.getRandom(10, window.innerWidth-30),
-                        y: 20,
-                    }
-                })
+                letters.push(new Letter(lettersGenerated, this.getRandomeLetter(), this.getRandom(10, window.innerWidth-30), 20))
 
                 if(score >= 10){
                     const r = this.getRandom(1, 6)
                     if(r === 2){
                         lettersGenerated++
-                        randomLetter = this.getRandomeLetter()
-                        newLetters.push({
-                            letter: randomLetter,
-                            key: lettersGenerated,
-                            position: {
-                                x: this.getRandom(10, window.innerWidth-30),
-                                y: 20,
-                            }
-                        })
+                        letters.push(new Letter(lettersGenerated, this.getRandomeLetter(), this.getRandom(10, window.innerWidth-30), 50))
                     }
                 }
             }
             
             //Update letters position and check gameover
-            newLetters.forEach(letter => {
-                letter.position.y += fallingSpeed
-                if(letter.position.y >= (window.innerHeight-110)){
-                    gameOver = true
+            letters.forEach(letter => {
+                if(letter.active){
+                    letter.y += fallingSpeed
+                    if(letter.y >= (window.innerHeight-110)){
+                        gameOver = true
+                    }
                 }
             })
-    
+            
+            letters.forEach(letter => {
+                if(!letter.active){ 
+                    letter.count += 1;
+                }
+            })
+
+            letters = letters.filter(letter => letter.active || letter.count < 35)
+
             const loop = requestAnimationFrame(this.mainLoop);
             this.setState({
-                letters: newLetters,
+                letters,
                 score, 
                 speedIncrement, 
                 lettersGenerated, 
@@ -128,8 +145,7 @@ class Game extends React.Component{
                 loop,
                 fallingSpeed, 
                 pressedLetters, 
-                gameOver,
-                explosionList
+                gameOver
             })
         }else{
             this.stopGame()
@@ -168,20 +184,9 @@ class Game extends React.Component{
         this.setState({loop})
     }
 
-    drawLetter = (letter) => {
-        return (
-            <span className="letter" key={letter.key} style={
-                {
-                    position: "absolute", 
-                    left: letter.position.x,
-                    top: letter.position.y
-                }
-            }>{letter.letter}</span>
-        )
-    }
+    drawLetter = (letter) => letter.active ? letter.render() : letter.exploding();
 
     showExplosion = (letter) => {
-        
         setTimeout(() => {
             const explosionList = this.state.explosionList.filter(l => {
                 return l.letter !== letter.letter
@@ -199,8 +204,7 @@ class Game extends React.Component{
     }
 
     render(){
-        const {letters, explosionList, showMiss } = this.state
-
+        const {letters, showMiss } = this.state
         return(
             <div className="game">
                 <div className="miss" style={{display: showMiss}} />
@@ -208,7 +212,7 @@ class Game extends React.Component{
                 
                 {letters && letters.map(letter => this.drawLetter(letter))}
 
-                {explosionList && explosionList.map(letter => this.showExplosion(letter))}
+                {/* {explosionList && explosionList.map(letter => this.showExplosion(letter))} */}
                 <div className="gameOverSection" style={{top: (window.innerHeight-100)}}>GAME OVER</div>
             </div>
         )
